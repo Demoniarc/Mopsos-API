@@ -4,10 +4,7 @@
 import uvicorn
 from fastapi import FastAPI
 import numpy as np
-import pickle
 import pandas as pd
-import ccxt
-from xgboost import XGBRegressor
 from google.cloud import bigquery
 import os
 import json
@@ -17,7 +14,7 @@ app = FastAPI()
 # 3. Index route, opens automatically on http://127.0.0.1:8000
 @app.get('/')
 def index():
-    return {'ez'}
+    return {'/'}
 
 @app.get('/oceanprotocol')
 def get_name():
@@ -26,6 +23,34 @@ def get_name():
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
     client = bigquery.Client()
     table_id = 'tranquil-lore-396810.mopsos_ai.ocean_protocol'
+    query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
+    query_job = client.query(query)
+    results = query_job.result(page_size=10000)
+    rows = [dict(row) for row in results]
+
+    return rows
+
+@app.get('/dimitra')
+def get_name():
+    
+    credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+    client = bigquery.Client()
+    table_id = 'tranquil-lore-396810.mopsos_ai.dimitra'
+    query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
+    query_job = client.query(query)
+    results = query_job.result(page_size=10000)
+    rows = [dict(row) for row in results]
+
+    return rows
+
+@app.get('/numerai')
+def get_name():
+    
+    credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
+    client = bigquery.Client()
+    table_id = 'tranquil-lore-396810.mopsos_ai.numerai'
     query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
     query_job = client.query(query)
     results = query_job.result(page_size=10000)
