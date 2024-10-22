@@ -17,7 +17,7 @@ def index():
     return {'/'}
 
 @app.get('/oceanprotocol')
-def get_name():
+def get_ocean_protocol_data():
     
     credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
@@ -31,7 +31,7 @@ def get_name():
     return rows
 
 @app.get('/dimitra')
-def get_name():
+def get_dimitra_data():
     
     credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
@@ -45,7 +45,7 @@ def get_name():
     return rows
 
 @app.get('/numerai')
-def get_name():
+def get_numerai_data():
     
     credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
