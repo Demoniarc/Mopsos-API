@@ -10,3 +10,6 @@ httptools
 ccxt
 xgboost
 google-cloud-bigquery
+google-auth
+google-cloud-firestore
+
