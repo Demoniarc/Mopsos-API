@@ -3,6 +3,7 @@
 # 1. Library imports
 import uvicorn
 from fastapi import HTTPException, status, Security, FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader, APIKeyQuery
 import numpy as np
 import pandas as pd
@@ -63,6 +64,19 @@ def get_api_key(
     )
 
 app = FastAPI()
+
+# CORS Middleware Configuration
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # 3. Index route, opens automatically on http://127.0.0.1:8000
 @app.get('/')
