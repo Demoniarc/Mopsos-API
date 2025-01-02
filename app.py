@@ -68,7 +68,7 @@ app = FastAPI()
 # CORS Middleware Configuration
 origins = [
     "http://localhost:3000",
-    "https://v0-app-5lswgd9wadi.vercel.app",
+    "https://mopsos-ai.vercel.app",
     "http://127.0.0.1:3000",
 ]
 app.add_middleware(
