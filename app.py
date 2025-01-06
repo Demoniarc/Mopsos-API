@@ -3,17 +3,19 @@
 # 1. Library imports
 import uvicorn
 from fastapi import HTTPException, status, Security, FastAPI
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import APIKeyHeader, APIKeyQuery
 import numpy as np
 import pandas as pd
-from google.cloud import bigquery
 from google.cloud import firestore
 from google.oauth2 import service_account
 import time
 from datetime import datetime, timezone
+from supabase import create_client, Client
 import os
 import json
+
+url = os.getenv('SUPABASE_URL')
+key = os.getenv('SUPABASE_KEY')
 
 api_key_query = APIKeyQuery(name="api-key", auto_error=False)
 api_key_header = APIKeyHeader(name="x-api-key", auto_error=False)
@@ -65,95 +67,37 @@ def get_api_key(
 
 app = FastAPI()
 
-# CORS Middleware Configuration
-origins = [
-    "http://localhost:3000",
-    "https://mopsos-ai.vercel.app",
-    "http://127.0.0.1:3000",
-]
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # 3. Index route, opens automatically on http://127.0.0.1:8000
 @app.get('/')
 def index():
     return {'/'}
 
-@app.get('/oceanprotocol')
-def get_ocean_protocol_data(api_key: str = Security(get_api_key)):
+@app.get('/project_id')
+def get_project_id(api_key: str = Security(get_api_key)):
+
+    supabase: Client = create_client(url, key)
+    response = supabase.table('data') \
+        .select('id') \
+        .execute()
     
-    credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-    client = bigquery.Client()
-    table_id = 'tranquil-lore-396810.mopsos_ai.ocean_protocol'
-    query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
-    query_job = client.query(query)
-    results = query_job.result(page_size=10000)
-    rows = [dict(row) for row in results]
+    unique_ids = sorted({item['id'] for item in response.data})
 
-    return rows
+    return unique_ids
 
-@app.get('/dimitra')
-def get_dimitra_data(api_key: str = Security(get_api_key)):
+@app.get('/data')
+def get_data(api_key: str = Security(get_api_key), project_id: str = None, start_date: str = None, end_date: str = None):
+    supabase: Client = create_client(url, key)
+    query = supabase.table('data').select('*').eq('id', project_id)
+
+    if start_date:
+        query = query.gte('date', start_date)
     
-    credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-    client = bigquery.Client()
-    table_id = 'tranquil-lore-396810.mopsos_ai.dimitra'
-    query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
-    query_job = client.query(query)
-    results = query_job.result(page_size=10000)
-    rows = [dict(row) for row in results]
+    if end_date:
+        query = query.lte('date', end_date)
 
-    return rows
+    response = query.order('date', desc=False).execute()
 
-@app.get('/numerai')
-def get_numerai_data(api_key: str = Security(get_api_key)):
-    
-    credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-    client = bigquery.Client()
-    table_id = 'tranquil-lore-396810.mopsos_ai.numerai'
-    query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
-    query_job = client.query(query)
-    results = query_job.result(page_size=10000)
-    rows = [dict(row) for row in results]
-
-    return rows
-
-@app.get('/anyone')
-def get_anyone_data(api_key: str = Security(get_api_key)):
-    
-    credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-    client = bigquery.Client()
-    table_id = 'tranquil-lore-396810.mopsos_ai.anyone'
-    query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
-    query_job = client.query(query)
-    results = query_job.result(page_size=10000)
-    rows = [dict(row) for row in results]
-
-    return rows
-
-@app.get('/genomes')
-def get_genomes_data(api_key: str = Security(get_api_key)):
-    
-    credentials_path = '/etc/secrets/tranquil-lore-396810-2d54adfd3963.json'
-    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = credentials_path
-    client = bigquery.Client()
-    table_id = 'tranquil-lore-396810.mopsos_ai.genomes'
-    query = f"SELECT * FROM `{table_id}` ORDER BY date ASC"
-    query_job = client.query(query)
-    results = query_job.result(page_size=10000)
-    rows = [dict(row) for row in results]
-
-    return rows
-
+    return response.data
     
 # 5. Run the API with uvicorn
 #    Will run on http://127.0.0.1:8000
