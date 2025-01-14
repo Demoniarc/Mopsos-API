@@ -16,10 +16,6 @@ from supabase import create_client, Client
 import os
 import json
 
-
-# Montez le dossier static pour les fichiers statiques
-app.mount("/static", StaticFiles(directory="static"), name="static")
-
 url = os.getenv('SUPABASE_URL')
 key = os.getenv('SUPABASE_KEY')
 
@@ -72,6 +68,9 @@ def get_api_key(
     )
 
 app = FastAPI()
+
+# Montez le dossier static pour les fichiers statiques
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 @app.get("/favicon.svg", include_in_schema=False)
 async def favicon():
