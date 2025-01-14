@@ -13,6 +13,10 @@ from datetime import datetime, timezone
 from supabase import create_client, Client
 import os
 import json
+from fastapi.staticfiles import StaticFiles
+
+# Montez le dossier static pour les fichiers statiques
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 url = os.getenv('SUPABASE_URL')
 key = os.getenv('SUPABASE_KEY')
@@ -71,6 +75,10 @@ app = FastAPI()
 @app.get('/')
 def index():
     return {'/'}
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return RedirectResponse(url="/static/favicon.ico")
 
 @app.get('/project_id')
 def get_project_id(api_key: str = Security(get_api_key)):
