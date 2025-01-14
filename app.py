@@ -4,6 +4,8 @@
 import uvicorn
 from fastapi import HTTPException, status, Security, FastAPI
 from fastapi.security import APIKeyHeader, APIKeyQuery
+from fastapi.responses import RedirectResponse
+from fastapi.staticfiles import StaticFiles
 import numpy as np
 import pandas as pd
 from google.cloud import firestore
@@ -13,7 +15,7 @@ from datetime import datetime, timezone
 from supabase import create_client, Client
 import os
 import json
-from fastapi.staticfiles import StaticFiles
+
 
 # Montez le dossier static pour les fichiers statiques
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -71,14 +73,19 @@ def get_api_key(
 
 app = FastAPI()
 
+@app.get("/favicon.svg", include_in_schema=False)
+async def favicon():
+    return RedirectResponse(url="/static/favicon.svg")
+
+# Redirect /favicon.ico to the SVG file
+@app.get("/favicon.ico", include_in_schema=False)
+async def redirect_favicon():
+    return RedirectResponse(url="/static/favicon.svg")
+
 # 3. Index route, opens automatically on http://127.0.0.1:8000
 @app.get('/')
 def index():
     return {'/'}
-
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    return RedirectResponse(url="/static/favicon.ico")
 
 @app.get('/project_id')
 def get_project_id(api_key: str = Security(get_api_key)):
