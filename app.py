@@ -112,7 +112,22 @@ def get_data(api_key: str = Security(get_api_key), project_id: str = None, start
     response = query.order('date', desc=False).execute()
 
     return response.data
+
+@app.get('/twitter')
+def get_data(api_key: str = Security(get_api_key), project_id: str = None, start_date: str = None, end_date: str = None):
+    supabase: Client = create_client(url, key)
+    query = supabase.table('twitter').select('*').eq('id', project_id)
+
+    if start_date:
+        query = query.gte('date', start_date)
     
+    if end_date:
+        query = query.lte('date', end_date)
+
+    response = query.order('date', desc=False).execute()
+
+    return response.data
+
 # 5. Run the API with uvicorn
 #    Will run on http://127.0.0.1:8000
 if __name__ == '__main__':
